@@ -7,6 +7,7 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
+  Clipboard,
 } from 'react-native';
 import { FileSystem } from 'expo';
 import AccelerometerSensor from './components/AccelerometerSensor';
@@ -123,7 +124,7 @@ export default class App extends React.Component {
     ).catch(err => console.error('some error happened', err));
   };
   saveAsString = async str => {
-    const filename = `${FileSystem.documentDirectory}myfile.txt`;
+    const filename = `${FileSystem.documentDirectory}myfile.json`;
 
     await FileSystem.writeAsStringAsync(filename, str);
     const GetInfo = await FileSystem.getInfoAsync(filename);
@@ -132,6 +133,37 @@ export default class App extends React.Component {
 
     console.log('GetInfo', GetInfo);
     console.log('Saved data', ReadData);
+
+    let upload_url = await fetch('https://dropfile.to/getuploadserver').then(
+      res => res.text()
+    );
+    upload_url = `${upload_url.trim()}/upload`;
+    console.log('got upload_url', upload_url);
+    const uri = filename;
+    const extension = uri.slice(uri.lastIndexOf('.') + 1);
+    const info = await FileSystem.getInfoAsync(uri);
+    console.log('image info', uri, info);
+    const formData = new FormData();
+    formData.append('file', {
+      uri: filename,
+      name: `data.json`,
+      filename: `data.json`,
+      type: 'application/json',
+    });
+    return fetch(upload_url, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+      .then(res => res.json())
+      .then(json => {
+        Clipboard.setString(json.url);
+
+        alert(`Url has been copied to clipboard!\n\nurl: ${json.url}`);
+      });
 
     // Create a storage ref
     // const storageRef = firebase.storage().ref('data/');
