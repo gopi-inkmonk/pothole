@@ -20,9 +20,11 @@ export default class App extends React.Component {
     gyroscopeData: {},
     GPSData: null,
     CompassData: null,
-    now: null,
+    TimeStamp: null,
   };
+
   arr = [];
+
   constructor(props) {
     super(props);
     const prevSetState = this.setState.bind(this);
@@ -32,6 +34,7 @@ export default class App extends React.Component {
       prevSetState(obj);
     };
   }
+
   flushData = () => {
     const prevArr = this.arr;
 
@@ -58,7 +61,7 @@ export default class App extends React.Component {
     );
 
     // Gps Data
-    const timestamp = prevArr.map(
+    const GPSTimestamp = prevArr.map(
       x => (x.GPSData && x.GPSData.timestamp) || ''
     );
     const altitude = prevArr.map(x => (x.GPSData && x.GPSData.altitude) || '');
@@ -83,34 +86,20 @@ export default class App extends React.Component {
       x => (x.CompassData && x.CompassData.trueHeading) || ''
     );
 
+    const TimeStamp = prevArr.map(x => x.TimeStamp || '');
+
     this.arr = [];
-    // this.saveToFirebase({
-    //   accelerometerX,
-    //   accelerometerY,
-    //   accelerometerZ,
-    //   gyroscopeX,
-    //   gyroscopeY,
-    //   gyroscopeZ,
-    //   timestamp,
-    //   altitude,
-    //   latitude,
-    //   longitude,
-    //   GPSAccuracy,
-    //   speed,
-    //   heading,
-    //   CompassAccuracy,
-    //   magHeading,
-    //   trueHeading,
-    // });
+
     this.saveAsString(
       JSON.stringify({
+        TimeStamp,
         accelerometerX,
         accelerometerY,
         accelerometerZ,
         gyroscopeX,
         gyroscopeY,
         gyroscopeZ,
-        timestamp,
+        GPSTimestamp,
         altitude,
         latitude,
         longitude,
@@ -123,6 +112,7 @@ export default class App extends React.Component {
       })
     ).catch(err => console.error('some error happened', err));
   };
+
   saveAsString = async str => {
     const filename = `${FileSystem.documentDirectory}myfile.json`;
 
@@ -137,6 +127,7 @@ export default class App extends React.Component {
     let upload_url = await fetch('https://dropfile.to/getuploadserver').then(
       res => res.text()
     );
+
     upload_url = `${upload_url.trim()}/upload`;
     console.log('got upload_url', upload_url);
     const uri = filename;
@@ -164,42 +155,7 @@ export default class App extends React.Component {
 
         alert(`Url has been copied to clipboard!\n\nurl: ${json.url}`);
       });
-
-    // Create a storage ref
-    // const storageRef = firebase.storage().ref('data/');
-
-    //Upload file
-    // storageRef.put(filename);
   };
-
-  /*saveToFirebase = str => {
-    console.log('saving', str);
-    alert(`Saving ${str}`);
-
-    console.log('Saving', str);
-    const timeStamp = str.timestamp;
-    const updates = {};
-
-    updates['accelerometerX'] = str.accelerometerX;
-    updates['accelerometerY'] = str.accelerometerY;
-    updates['accelerometerZ'] = str.accelerometerZ;
-    updates['gyroscopeX'] = str.gyroscopeX;
-    updates['gyroscopeY'] = str.gyroscopeY;
-    updates['gyroscopeZ'] = str.gyroscopeZ;
-    updates['timestamp'] = str.timestamp;
-    updates['altitude'] = str.altitude;
-    updates['latitude'] = str.latitude;
-    updates['longitude'] = str.longitude;
-
-    return firebase
-      .database()
-      .ref()
-      .child(`/${timeStamp}/`)
-      .update(updates)
-      .then(() => {
-        alert('Name successfully saved');
-      });
-  };*/
 
   // async componentDidMount() {
   //   this.timer = setTimeout(() => {
@@ -212,12 +168,13 @@ export default class App extends React.Component {
   // }
 
   setGyroscopeData = ({ gyroscopeData }) =>
-    this.setState({ gyroscopeData, now: Date.now() });
+    this.setState({ gyroscopeData, TimeStamp: Date.now() });
   setAccelerometerData = ({ accelerometerData }) =>
-    this.setState({ accelerometerData, now: Date.now() });
-  setGPSData = ({ GPSData }) => this.setState({ GPSData, now: Date.now() });
+    this.setState({ accelerometerData, TimeStamp: Date.now() });
+  setGPSData = ({ GPSData }) =>
+    this.setState({ GPSData, TimeStamp: Date.now() });
   setCompassData = ({ CompassData }) =>
-    this.setState({ CompassData, now: Date.now() });
+    this.setState({ CompassData, TimeStamp: Date.now() });
 
   render() {
     const {
@@ -225,14 +182,14 @@ export default class App extends React.Component {
       accelerometerData,
       GPSData,
       CompassData,
-      now,
+      TimeStamp,
     } = this.state;
 
     return (
       <View style={styles.container}>
         <ScrollView style={styles.contentContainer}>
           <View>
-            <Text>Time now {now}</Text>
+            <Text>Time now {TimeStamp}</Text>
           </View>
           <AccelerometerSensor
             setAccelerometerData={this.setAccelerometerData}
