@@ -121,19 +121,19 @@ export default class App extends React.Component {
 
     const ReadData = await FileSystem.readAsStringAsync(filename);
 
-    console.log('GetInfo', GetInfo);
-    console.log('Saved data', ReadData);
+    // console.log('GetInfo', GetInfo);
+    // console.log('Saved data', ReadData);
 
     let upload_url = await fetch('https://dropfile.to/getuploadserver').then(
       res => res.text()
     );
 
     upload_url = `${upload_url.trim()}/upload`;
-    console.log('got upload_url', upload_url);
+    // console.log('got upload_url', upload_url);
     const uri = filename;
     const extension = uri.slice(uri.lastIndexOf('.') + 1);
     const info = await FileSystem.getInfoAsync(uri);
-    console.log('image info', uri, info);
+    // console.log('image info', uri, info);
     const formData = new FormData();
     formData.append('file', {
       uri: filename,
@@ -154,6 +154,18 @@ export default class App extends React.Component {
         Clipboard.setString(json.url);
 
         alert(`Url has been copied to clipboard!\n\nurl: ${json.url}`);
+
+        this.setState(previousState => {
+          return {
+            accelerometerData: {},
+            gyroscopeData: {},
+            GPSData: null,
+            CompassData: null,
+            TimeStamp: null,
+          };
+        });
+
+        // console.log('this.state', this.state);
       });
   };
 
